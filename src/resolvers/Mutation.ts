@@ -1,13 +1,13 @@
 import { Post } from '@prisma/client';
 import { Context } from '..';
 
-interface PostCreateArgs {
+interface PostArgs {
   input: {
-    title: string;
-    content: string;
+    title?: string;
+    content?: string;
   };
 }
-interface PostCreateResult {
+interface PostResult {
   userErrors: { message?: string }[];
   post: Post | null;
 }
@@ -15,9 +15,9 @@ interface PostCreateResult {
 export const Mutation = {
   postCreate: async (
     _: any,
-    { input }: PostCreateArgs,
+    { input }: PostArgs,
     { prisma }: Context
-  ): Promise<PostCreateResult> => {
+  ): Promise<PostResult> => {
     const { content, title } = input;
     if (!title || !content) {
       return {
@@ -33,6 +33,53 @@ export const Mutation = {
       },
     });
 
+    return {
+      userErrors: [],
+      post,
+    };
+  },
+
+  postUpdate: async (
+    _: any,
+    { postId, input }: { postId: string; input: PostArgs['input'] },
+    { prisma }: Context
+  ): Promise<PostResult> => {
+    const { title, content } = input;
+
+    if (!title && !content) {
+      return {
+        userErrors: [{ message: 'Please provide atleast one values' }],
+        post: null,
+      };
+    }
+    const existsPost = await prisma.post.findUnique({
+      where: {
+        id: Number(postId),
+      },
+    });
+    if (!existsPost) {
+      return {
+        userErrors: [{ message: 'Post doesnt exist' }],
+        post: null,
+      };
+    }
+
+    let postUpdatePayload = {
+      title,
+      content,
+    };
+
+    if (!title) delete postUpdatePayload.title;
+    if (!content) delete postUpdatePayload.content;
+
+    const post = await prisma.post.update({
+      data: {
+        ...postUpdatePayload,
+      },
+      where: {
+        id: Number(postId),
+      },
+    });
     return {
       userErrors: [],
       post,

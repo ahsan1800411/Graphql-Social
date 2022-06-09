@@ -1,3 +1,13 @@
+import { Context } from '..';
+
 export const Query = {
-  me: () => 'Hello world',
+  posts: (_: any, __: any, { prisma }: Context) => {
+    return prisma.post.findMany({
+      orderBy: [
+        {
+          createdAt: 'desc',
+        },
+      ],
+    });
+  },
 };
