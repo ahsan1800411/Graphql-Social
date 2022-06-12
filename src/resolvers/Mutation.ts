@@ -1,5 +1,6 @@
-import { Post } from '@prisma/client';
+import { Post, User } from '@prisma/client';
 import { Context } from '..';
+import { hashedPassword } from '../utils/hash';
 
 interface PostArgs {
   input: {
@@ -10,6 +11,19 @@ interface PostArgs {
 interface PostResult {
   userErrors: { message?: string }[];
   post: Post | null;
+}
+
+interface UserArgs {
+  input: {
+    name: string;
+    email: string;
+    password: string;
+  };
+}
+
+interface UserResult {
+  userErrors: { message?: string }[];
+  user: User | null;
 }
 
 export const Mutation = {
@@ -83,6 +97,31 @@ export const Mutation = {
     return {
       userErrors: [],
       post,
+    };
+  },
+  userCreate: async (
+    _: any,
+    { input }: UserArgs,
+    { prisma }: Context
+  ): Promise<UserResult> => {
+    const { email, password, name } = input;
+    if (!email || !password || !name) {
+      return {
+        userErrors: [{ message: 'Please provide all the values' }],
+        user: null,
+      };
+    }
+    const passwordHashed = await hashedPassword(password);
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: passwordHashed,
+      },
+    });
+    return {
+      userErrors: [],
+      user,
     };
   },
 };
