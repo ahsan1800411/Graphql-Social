@@ -16,8 +16,14 @@ export const PostMutations = {
   postCreate: async (
     _: any,
     { input }: PostArgs,
-    { prisma }: Context
+    { prisma, userInfo }: Context
   ): Promise<PostResult> => {
+    if (!userInfo) {
+      return {
+        userErrors: [{ message: 'Forbidden Access' }],
+        post: null,
+      };
+    }
     const { content, title } = input;
     if (!title || !content) {
       return {
@@ -29,7 +35,7 @@ export const PostMutations = {
       data: {
         content,
         title,
-        authorId: 1,
+        authorId: userInfo.id,
       },
     });
 

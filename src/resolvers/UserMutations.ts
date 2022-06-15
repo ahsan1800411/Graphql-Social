@@ -1,14 +1,21 @@
 import { Context } from '..';
-import { hashedPassword } from '../utils/hash';
+import { comparePassword, hashedPassword } from '../utils/hash';
 import validator from 'validator';
 import { CreateToken } from '../utils/senToken';
 
 interface UserArgs {
   input: {
     name: string;
+    bio: string;
     email: string;
     password: string;
-    bio: string;
+  };
+}
+
+interface SigninArgs {
+  input: {
+    email: string;
+    password: string;
   };
 }
 
@@ -18,12 +25,12 @@ interface UserResult {
 }
 
 export const UserMutations = {
-  userCreate: async (
+  signup: async (
     _: any,
     { input }: UserArgs,
     { prisma }: Context
   ): Promise<UserResult> => {
-    const { email, password, name, bio } = input;
+    const { name, bio, email, password } = input;
 
     const isEmail = validator.isEmail(email);
     if (!isEmail) {
@@ -67,6 +74,36 @@ export const UserMutations = {
         userId: user.id,
       },
     });
+
+    const token = CreateToken(user);
+    return {
+      userErrors: [],
+      token,
+    };
+  },
+  signin: async (
+    _: any,
+    { input }: SigninArgs,
+    { prisma }: Context
+  ): Promise<UserResult> => {
+    const { email, password } = input;
+    const user = await prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+
+    const isMatch = await comparePassword(password, user);
+    if (!isMatch) {
+      return {
+        userErrors: [
+          {
+            message: 'Invalid Credentials',
+          },
+        ],
+        token: null,
+      };
+    }
 
     const token = CreateToken(user);
     return {
