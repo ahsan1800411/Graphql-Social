@@ -1,5 +1,6 @@
 import { Post } from '@prisma/client';
 import { Context } from '..';
+import { CanUserMutatePost } from '../utils/CanUserMutatePost';
 
 interface PostArgs {
   input: {
@@ -48,8 +49,22 @@ export const PostMutations = {
   postUpdate: async (
     _: any,
     { postId, input }: { postId: string; input: PostArgs['input'] },
-    { prisma }: Context
+    { prisma, userInfo }: Context
   ): Promise<PostResult> => {
+    if (!userInfo) {
+      return {
+        userErrors: [{ message: 'Forbidden Access' }],
+        post: null,
+      };
+    }
+
+    const error = await CanUserMutatePost({
+      userId: userInfo.id,
+      postId: Number(postId),
+      prisma,
+    });
+    if (error) return error;
+
     const { title, content } = input;
 
     if (!title && !content) {
