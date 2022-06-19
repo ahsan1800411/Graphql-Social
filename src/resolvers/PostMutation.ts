@@ -1,4 +1,4 @@
-import { Post } from '@prisma/client';
+import { Post, prisma } from '@prisma/client';
 import { Context } from '..';
 import { CanUserMutatePost } from '../utils/CanUserMutatePost';
 
@@ -99,6 +99,37 @@ export const PostMutations = {
       },
       where: {
         id: Number(postId),
+      },
+    });
+    return {
+      userErrors: [],
+      post,
+    };
+  },
+  postPublish: async (
+    _: any,
+    { postId }: { postId: string },
+    { prisma, userInfo }: Context
+  ) => {
+    if (!userInfo) {
+      return {
+        userErrors: [{ message: 'Forbidden Access' }],
+        post: null,
+      };
+    }
+
+    const error = await CanUserMutatePost({
+      userId: userInfo.id,
+      postId: Number(postId),
+      prisma,
+    });
+    if (error) return error;
+    const post = await prisma.post.update({
+      where: {
+        id: Number(postId),
+      },
+      data: {
+        published: true,
       },
     });
     return {

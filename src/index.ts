@@ -1,9 +1,8 @@
 import { ApolloServer } from 'apollo-server';
 import { typeDefs } from './schema';
-import { Query, Mutation } from './resolvers';
+import { Query, Mutation, Profile } from './resolvers';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { verifyToken } from './utils/verifyToken';
-
 const prisma = new PrismaClient();
 
 export interface Context {
@@ -22,6 +21,7 @@ const server = new ApolloServer({
   resolvers: {
     Query,
     Mutation,
+    Profile,
   },
   context: async ({ req }: any): Promise<Context> => {
     const userInfo = verifyToken(req.headers.authorization);

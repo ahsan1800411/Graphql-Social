@@ -10,4 +10,27 @@ export const Query = {
       ],
     });
   },
+  me: async (_: any, __: any, { prisma, userInfo }: Context) => {
+    if (!userInfo) {
+      return {
+        userErrors: [{ message: 'Forbidden Access' }],
+        post: null,
+      };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userInfo.id,
+      },
+    });
+
+    return user;
+  },
+  profile: (_: any, { userId }: { userId: string }, { prisma }: Context) => {
+    return prisma.profile.findUnique({
+      where: {
+        userId: Number(userId),
+      },
+    });
+  },
 };
