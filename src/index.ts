@@ -3,7 +3,8 @@ import { typeDefs } from './schema';
 import { Query, Mutation, Profile, Post, User } from './resolvers';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { verifyToken } from './utils/verifyToken';
-const prisma = new PrismaClient();
+
+export const prisma = new PrismaClient();
 
 export interface Context {
   prisma: PrismaClient<
