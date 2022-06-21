@@ -7,7 +7,6 @@ interface ParentType {
 
 export const Post = {
   user: (parent: ParentType, _: any, { prisma }: Context) => {
-    console.log('Called');
     return userLoader.load(parent.authorId);
   },
 };
