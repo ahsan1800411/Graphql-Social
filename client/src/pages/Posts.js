@@ -29,6 +29,7 @@ const Posts = () => {
       {posts?.map((post) => {
         return (
           <Post
+            key={post.id}
             content={post.content}
             title={post.title}
             author={post.user.name}
