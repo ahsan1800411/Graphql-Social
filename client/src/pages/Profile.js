@@ -2,7 +2,6 @@ import { useQuery, gql } from '@apollo/client';
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import Post from '../components/Post';
-import PostCreate from '../components/PostCreate';
 
 const Profile = () => {
   const { id } = useParams();
@@ -45,7 +44,7 @@ const Profile = () => {
     <>
       <h1>Profile User :: {data.profile.user.name} </h1>
       <p style={{ color: 'red' }}>My Bio is: {data.profile.bio}</p>
-      <PostCreate />
+
       <div>
         {data.profile.user.posts.map((post) => {
           return (
